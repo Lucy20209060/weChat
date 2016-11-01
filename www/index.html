@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="">
+
+    <title>Angular和Bootstrap</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        min-height: 500px;
+        padding-top: 51px;
+        background: #eeede8;
+      }
+      .blog-post,.sidebar-module{
+        padding: 10px;
+        background: #fff;
+        box-shadow: 8px 8px 8px #ccc;
+        border-radius: 5px;
+        margin-bottom: 30px;
+      }
+      .col-lg-4{
+        text-align: center;
+        /*width: 10%;*/
+        color: #333;
+      }
+      .col-lg-4:hover{
+        /*color: #ff6767;*/
+      }
+      .img-circle{
+        margin-bottom: 5px;
+      }
+    </style>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="http://cdn.bootcss.com/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="http://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body ng-app="foodModule">
+
+    
+    <ui-view></ui-view>
+    
+
+    
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script type="text/javascript">
+        /*!
+         * IE10 viewport hack for Surface/desktop Windows 8 bug
+         * Copyright 2014 Twitter, Inc.
+         * Licensed under the Creative Commons Attribution 3.0 Unported License. For
+         * details, see http://creativecommons.org/licenses/by/3.0/.
+         */
+
+        // See the Getting Started docs for more information:
+        // http://getbootstrap.com/getting-started/#support-ie10-width
+
+        (function () {
+          'use strict';
+          if (navigator.userAgent.match(/IEMobile\/10\.0/)) {
+            var msViewportStyle = document.createElement('style')
+            msViewportStyle.appendChild(
+              document.createTextNode(
+                '@-ms-viewport{width:auto!important}'
+              )
+            )
+            document.querySelector('head').appendChild(msViewportStyle)
+          }
+        })();
+    </script>
+
+    <script type="text/javascript" src="js/angular.js"></script>
+    <script type="text/javascript" src="js/angular-ui-router.min.js"></script>
+    <script type="text/javascript">
+    var foodApp = angular.module('foodModule',['ui.router'])
+
+    .run(function($rootScope, $state, $stateParams) {
+        $rootScope.foodPrefix = "http://tnfs.tngou.net/image";
+
+        $rootScope.$state = $state;
+        $rootScope.$stateParams = $stateParams;
+        $rootScope.$on("$stateChangeSuccess", function(event, toState, toParams, fromState, fromParams) {
+            // to be used for back button //won't work when page is reloaded.
+            $rootScope.previousState_name = fromState.name;
+            $rootScope.previousState_params = fromParams;
+        });
+        //back button function called from back button's ng-click="back()"
+        $rootScope.back = function(obj) {
+          if($rootScope.previousState_name.trim().length != 0){
+            $state.go($rootScope.previousState_name, $rootScope.previousState_params);
+            // $state.go('^');
+          }else{
+            // alert('没有可返回的页面!');
+            $('#'+obj).popover('show');
+
+          }
+        };
+    })
+
+
+
+
+    .filter('trustHtml', function ($sce) {
+        return function (input) {
+            return $sce.trustAsHtml(input);
+        }
+    })
+
+    .config(function($stateProvider,$urlMatcherFactoryProvider,$locationProvider,$urlRouterProvider){
+      $urlMatcherFactoryProvider.caseInsensitive(true);
+      $urlRouterProvider.otherwise('/navbar/home');
+      $stateProvider
+      
+      .state("navbar",{
+        url:"/navbar",
+        templateUrl:"template/navbar.html",
+        controller:"navbarController"
+      })
+
+      .state("navbar.home",{
+        url:"/home",
+        templateUrl:"template/home.html",
+        controller:"homeController"
+      })
+
+      .state("navbar.health",{
+        url:"/health",
+        templateUrl:"template/health.html",
+        controller:"healthController"
+      })
+
+      .state("navbar.foodList",{
+        url:"/foodList/:id/:page",
+        templateUrl:"template/foodList.html",
+        controller:"foodListController"
+      })
+
+      .state("navbar.foodDetail",{
+        url:"/foodDetail/:id",
+        templateUrl:"template/foodDetail.html",
+        controller:"foodDetailController"
+      })
+
+    })
+
+    .controller("homeController",function($scope,$http){
+      
+    })
+
+    .controller("healthController",function($scope,$http){
+      $http({
+        url:'http://localhost/health.php',
+        method:'get'
+      }).then(function(respones){
+        console.log(respones.data.tngou)
+        $scope.healthCategory = respones.data.tngou;
+      })
+    })
+
+    .controller("navbarController",function($scope,$http){
+      $http({
+        url:'http://localhost/index.php',
+        method:'get'
+      }).then(function(respones){
+        // console.log(respones.data)
+        $scope.foodCategory = respones.data.tngou;
+      })
+    })
+
+    .controller("foodListController",function($scope,$http,$stateParams){
+      //初始化参数 id为分类的id page为第几页 rows是每页显示的记录数
+      var rows = 30;
+      var params = {
+        id:$stateParams.id,
+        page:$stateParams.page,
+        rows:rows
+      }
+      $http({
+        url:'http://localhost/list.php',
+        method:'get',
+        params:params
+      }).then(function(respones){
+        //console.log(respones.data.tngou)
+        //返回菜品列表数据
+        $scope.foodLists = respones.data.tngou;
+        //返回分类id
+        $scope.foodCateID = $stateParams.id;
+        //确定分页数 但footListsPageCount是一个数值 不是一个对象 需将页面转为对象[1,2,3,4...]
+       
+        var pageCountList = [];
+        for(var i=1;i<=Math.ceil(respones.data.total/rows);i++){
+          pageCountList.push(i);
+        }
+         $scope.foodListsPageCount = pageCountList;
+      })
+    })
+
+    .controller("foodDetailController",function($scope,$http,$stateParams){
+        $http({
+        url:'http://localhost/detail.php',
+        method:'get',
+        params:{
+          id:$stateParams.id
+        }
+      }).then(function(respones){
+        $scope.detail = respones.data;
+        // console.log(respones.data)
+      })
+    })
+    </script>
+  </body>
+</html>

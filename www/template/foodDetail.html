@@ -1,0 +1,26 @@
+<div class="continer marketing" style="padding:0 20px;">
+	<div class="row featurette">
+		<div class="col-md-7">
+		  <h2 class="featurette-heading">{{detail.name}}<span class="text-muted">{{detail.food}}</span></h2>
+		  <p class="lead">{{detail.description}}</p>
+		  <p class="lead" ng-bind-html="detail.message | trustHtml"></p>
+		</div>
+
+		<div class="col-md-5">
+		  <img class="featurette-image img-responsive" ng-src="{{foodPrefix}}{{detail.img}}" alt="{{detail.keywords}}">
+		</div>
+	</div>
+	<div class="btn-group">
+	  <!-- <a href="#/navbar/foodList" class="btn btn-lg btn-danger">
+	  	返回列表
+	  	<span class="glyphicon glyphicon-share-alt"></span>
+	  </a> -->
+
+		<a href="javascript:;" ng-click="back('foodDetailGoBack')" id="foodDetailGoBack" tabindex="0" class="btn btn-lg btn-danger" role="button" data-toggle="popover" title="返回列表" data-content="你在当前页进行了刷新，找不到回去的路">
+			返回列表
+	  		<span class="glyphicon glyphicon-share-alt"></span>
+		</a>
+
+
+	</div>
+</div>
